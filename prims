@@ -46,3 +46,10 @@ int main() {
 
     return 0;
 }
+Enter number of vertices: 4
+
+Enter cost adjacency matrix:
+0 10 6 5
+10 0 999 15
+6 999 0 4
+5 15 4 0
