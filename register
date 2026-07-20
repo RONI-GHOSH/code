@@ -1,0 +1,80 @@
+module register(
+    input clk,
+    input rst,
+    input load,
+    input [7:0] D,
+    output reg [7:0] Q
+);
+
+always @(posedge clk or posedge rst)
+begin
+    if (rst)
+        Q <= 8'b00000000;   // Reset register
+    else if (load)
+        Q <= D;             // Load data into register
+end
+
+endmodule
+`timescale 1ns/1ps
+
+module register_tb;
+
+reg clk;
+reg rst;
+reg load;
+reg [7:0] D;
+wire [7:0] Q;
+
+// Instantiate Register
+register uut(
+    .clk(clk),
+    .rst(rst),
+    .load(load),
+    .D(D),
+    .Q(Q)
+);
+
+// Clock Generation
+always #5 clk = ~clk;
+
+initial
+begin
+    clk = 0;
+    rst = 1;
+    load = 0;
+    D = 8'd0;
+
+    $display("Time\tReset\tLoad\tD\tQ");
+    $monitor("%0t\t%b\t%b\t%d\t%d",
+             $time, rst, load, D, Q);
+
+    // Reset register
+    #10 rst = 0;
+
+    // Load 25
+    load = 1;
+    D = 8'd25;
+    #10;
+
+    // Load 100
+    D = 8'd100;
+    #10;
+
+    // Disable loading (Q remains unchanged)
+    load = 0;
+    D = 8'd50;
+    #10;
+
+    // Reset register
+    rst = 1;
+    #10;
+
+    rst = 0;
+    load = 1;
+    D = 8'd75;
+    #10;
+
+    $finish;
+end
+
+endmodule
