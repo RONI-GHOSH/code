@@ -1,0 +1,72 @@
+module memory(
+input clk,
+input we,
+input [2:0] addr,
+input [7:0] data_in,
+output reg [7:0] data_out
+);
+reg [7:0] mem[0:7];
+always @(posedge clk)
+begin
+if(we)
+mem[addr] <= data_in;
+data_out <= mem[addr];
+end
+endmodule
+`timescale 1ns/1ps
+
+module memory_tb;
+
+reg clk;
+reg we;
+reg [2:0] addr;
+reg [7:0] data_in;
+wire [7:0] data_out;
+
+memory uut(
+.clk(clk),
+.we(we),
+.addr(addr),
+.data_in(data_in),
+.data_out(data_out)
+);
+
+always #5 clk = ~clk;
+
+initial
+begin
+clk=0;
+we=0;
+addr=0;
+data_in=0;
+
+#10;
+we=1;
+addr=3'b000;
+data_in=8'd25;
+
+#10;
+addr=3'b001;
+data_in=8'd100;
+
+#10;
+we=0;
+addr=3'b000;
+
+#10;
+addr=3'b001;
+
+#10;
+addr=3'b010;
+
+#10;
+$finish;
+end
+
+initial
+begin
+$display("Time WE Addr Data_In Data_Out");
+$monitor("%0t %b %d %d %d",$time,we,addr,data_in,data_out);
+end
+
+endmodule
