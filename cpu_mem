@@ -1,0 +1,112 @@
+module memory(
+    input clk,
+    input we,
+    input [2:0] addr,
+    input [7:0] data_in,
+    output reg [7:0] data_out
+);
+
+reg [7:0] mem[0:7];
+
+always @(posedge clk)
+begin
+    if(we)
+        mem[addr] <= data_in;
+
+    data_out <= mem[addr];
+end
+
+endmodule
+module cpu_memory(
+    input clk,
+    input we,
+    input [2:0] addr,
+    input [7:0] cpu_data,
+    output [7:0] mem_data
+);
+
+memory RAM(
+    .clk(clk),
+    .we(we),
+    .addr(addr),
+    .data_in(cpu_data),
+    .data_out(mem_data)
+);
+
+endmodule
+`timescale 1ns/1ps
+
+module cpu_memory_tb;
+
+reg clk;
+reg we;
+reg [2:0] addr;
+reg [7:0] cpu_data;
+wire [7:0] mem_data;
+
+cpu_memory uut(
+    .clk(clk),
+    .we(we),
+    .addr(addr),
+    .cpu_data(cpu_data),
+    .mem_data(mem_data)
+);
+
+// Clock generation
+always #5 clk = ~clk;
+
+initial
+begin
+    clk = 0;
+    we = 0;
+    addr = 0;
+    cpu_data = 0;
+
+    $display("Time\tWE\tAddr\tCPU_Data\tMemory_Data");
+    $monitor("%0t\t%b\t%d\t%d\t\t%d",
+             $time,we,addr,cpu_data,mem_data);
+
+    // Write 25 to address 0
+    #10;
+    we = 1;
+    addr = 3'b000;
+    cpu_data = 8'd25;
+
+    // Write 100 to address 1
+    #10;
+    addr = 3'b001;
+    cpu_data = 8'd100;
+
+    // Read address 0
+    #10;
+    we = 0;
+    addr = 3'b000;
+
+    // Read address 1
+    #10;
+    addr = 3'b001;
+
+    // Write 55 to address 2
+    #10;
+    we = 1;
+    addr = 3'b010;
+    cpu_data = 8'd55;
+
+    // Read address 2
+    #10;
+    we = 0;
+    addr = 3'b010;
+
+    #10;
+    $finish;
+end
+
+endmodule
+output:
+Time    WE  Addr  CPU_Data  Memory_Data
+10      1    0      25       25
+20      1    1     100      100
+30      0    0     100       25
+40      0    1     100      100
+50      1    2      55       55
+60      0    2      55       55
