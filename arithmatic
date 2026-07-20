@@ -1,0 +1,74 @@
+module arithmetic(
+    input [7:0] A,
+    input [7:0] B,
+    input [1:0] sel,
+    output reg [15:0] Y
+);
+
+always @(*) begin
+    case(sel)
+        2'b00: Y = A + B;   // Addition
+        2'b01: Y = A * B;   // Multiplication
+        2'b10: begin
+            if(B != 0)
+                Y = A / B;   // Division
+            else
+                Y = 16'd0;   // Divide by zero
+        end
+        default: Y = 16'd0;
+    endcase
+end
+
+endmodule
+`timescale 1ns/1ps
+
+module arithmetic_tb;
+
+reg [7:0] A;
+reg [7:0] B;
+reg [1:0] sel;
+wire [15:0] Y;
+
+arithmetic uut(
+    .A(A),
+    .B(B),
+    .sel(sel),
+    .Y(Y)
+);
+
+initial begin
+
+    $display("Time\tSel\tA\tB\tResult");
+    $monitor("%0t\t%b\t%d\t%d\t%d",
+             $time, sel, A, B, Y);
+
+    // Addition
+    A = 8'd20;
+    B = 8'd5;
+    sel = 2'b00;
+    #10;
+
+    // Multiplication
+    sel = 2'b01;
+    #10;
+
+    // Division
+    sel = 2'b10;
+    #10;
+
+    // Divide by zero
+    B = 8'd0;
+    sel = 2'b10;
+    #10;
+
+    $finish;
+
+end
+
+endmodule
+
+sel	Operation
+00	Addition (A + B)
+01	Multiplication (A * B)
+10	Division (A / B)
+11	Output = 0 (unused/default)
